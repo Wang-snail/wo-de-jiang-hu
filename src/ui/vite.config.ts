@@ -12,6 +12,7 @@ const apiPort = process.env.VITE_API_PORT || '3700'
 
 export default defineConfig({
   root: resolve(__dirname),
+  base: './',
   plugins: [react(), tailwindcss()],
   define: {
     __APP_BUILD_ID__: JSON.stringify(buildId),
