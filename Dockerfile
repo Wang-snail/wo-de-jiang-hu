@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ENV VITE_APP_MODE=cloud
 RUN npm run build
 
 FROM node:20-slim
@@ -19,6 +20,9 @@ WORKDIR /app/out/mcp
 RUN npm install --omit=dev
 
 WORKDIR /app
+ENV NODE_ENV=production
+ENV QUOROOM_DEPLOYMENT_MODE=cloud
+ENV QUOROOM_NO_AUTO_OPEN=1
 EXPOSE 3700
 
-CMD ["node", "out/mcp/cli.js", "serve"]
+CMD ["sh", "-c", "node out/mcp/cli.js serve --port ${PORT:-3700}"]

@@ -6,7 +6,7 @@ const CLOUD_TOKEN_QUERY_KEY = 'token'
 const CLOUD_MODE_FLAG_KEY = 'quoroom_cloud_mode'
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]'])
 
-export type AppMode = 'local' | 'cloud'
+export type AppMode = 'local' | 'cloud' | 'public'
 
 function normalizeApiBase(url: string): string {
   return url.replace(/\/+$/, '')
@@ -18,7 +18,9 @@ export function isLocalHost(): boolean {
 }
 
 function detectAppMode(envValue: string | undefined): AppMode {
-  if (envValue?.trim().toLowerCase() === 'cloud') return 'cloud'
+  const normalizedEnv = envValue?.trim().toLowerCase()
+  if (normalizedEnv === 'cloud') return 'cloud'
+  if (normalizedEnv === 'public') return 'public'
   if (typeof location !== 'undefined') {
     if (isLocalHost()) {
       // On localhost, clear any stale cloud flag and use local mode
@@ -39,8 +41,8 @@ export const APP_MODE = detectAppMode(import.meta.env.VITE_APP_MODE)
 export function getApiBase(): string {
   // Explicit env override always wins
   if (import.meta.env.VITE_API_URL) return normalizeApiBase(import.meta.env.VITE_API_URL)
-  // Cloud mode defaults to same-origin API.
-  if (APP_MODE === 'cloud') return ''
+  // Cloud/public modes default to same-origin API.
+  if (APP_MODE === 'cloud' || APP_MODE === 'public') return ''
   // On localhost — use same-origin URLs (Vite proxy or local server).
   const host = location.hostname
   if (LOCAL_HOSTNAMES.has(host)) return ''

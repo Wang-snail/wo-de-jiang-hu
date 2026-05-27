@@ -172,6 +172,12 @@ export function isCloudDeployment(): boolean {
   return getDeploymentMode() === 'cloud'
 }
 
+export function isPublicWebAccessEnabled(): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(
+    (process.env.QUOROOM_PUBLIC_WEB_ACCESS || '').trim().toLowerCase()
+  )
+}
+
 function readPersistedTokens(dataDir: string): { agent: string; user: string } | null {
   const file = join(dataDir, AUTH_TOKENS_FILE)
   if (!existsSync(file)) return null

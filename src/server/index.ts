@@ -20,6 +20,7 @@ import {
   isAllowedOrigin,
   isLocalOrigin,
   isCloudDeployment,
+  isPublicWebAccessEnabled,
   getDeploymentMode,
   setCorsHeaders,
   writeTokenFile,
@@ -505,9 +506,20 @@ export function createApiServer(options: ServerOptions = {}): {
       const handshakeHeaders: Record<string, string> = {
         ...responseHeaders,
       }
-      if (isCloudDeployment()) {
+      const publicWebAccess = isPublicWebAccessEnabled()
+      if (isCloudDeployment() && !publicWebAccess) {
         res.writeHead(403, handshakeHeaders)
         res.end(JSON.stringify({ error: 'Handshake is disabled in cloud mode' }))
+        return
+      }
+      if (publicWebAccess) {
+        if (origin && !isSameOrigin) {
+          res.writeHead(403, handshakeHeaders)
+          res.end(JSON.stringify({ error: 'Public web access allows same-origin clients only' }))
+          return
+        }
+        res.writeHead(200, handshakeHeaders)
+        res.end(JSON.stringify({ token: getUserToken() }))
         return
       }
       const isLocalClient = isLoopbackAddress(req.socket.remoteAddress)
